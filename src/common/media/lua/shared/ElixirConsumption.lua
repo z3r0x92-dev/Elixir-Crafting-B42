@@ -43,6 +43,12 @@ local function notify(player, text)
     end
 end
 
+local function textOr(key, fallback, ...)
+    local value = getText(key, ...)
+    if not value or value == key then return fallback end
+    return value
+end
+
 local function medicalLevel(recipeData)
     local player = recipeData and (recipeData.character or recipeData.player)
     if not player and getPlayer then player = getPlayer() end
@@ -268,19 +274,25 @@ local function onServerCommand(module, command, args)
     local player = getPlayer()
     if not player then return end
     if command == "TreatmentApplied" then
-        notify(player, getText(args.treatment == "KnoxCure"
-            and "IGUI_ElixirCraft_KnoxCureUsed"
-            or "IGUI_ElixirCraft_AdrenalineUsed"))
+        notify(player, args.treatment == "KnoxCure"
+            and textOr("IGUI_ElixirCraft_KnoxCureUsed",
+                "The cure floods your system. The infection is gone.")
+            or textOr("IGUI_ElixirCraft_AdrenalineUsed",
+                "Adrenaline surges through your body."))
     elseif command == "TreatmentRejected" then
         if args.reason == "cooldown" then
-            notify(player, getText("IGUI_ElixirCraft_Cooldown", args.remaining or 1))
+            notify(player, textOr("IGUI_ElixirCraft_Cooldown",
+                "Your body needs more time before another elixir.", args.remaining or 1))
         elseif args.itemKept then
-            notify(player, getText("IGUI_ElixirCraft_TreatmentRejectedKept"))
+            notify(player, textOr("IGUI_ElixirCraft_TreatmentRejectedKept",
+                "The treatment was rejected. The item remains in your inventory."))
         else
-            notify(player, getText("IGUI_ElixirCraft_TreatmentRejected"))
+            notify(player, textOr("IGUI_ElixirCraft_TreatmentRejected",
+                "The treatment failed. Check the server log for details."))
         end
     elseif command == "StimulantCrash" then
-        notify(player, getText("IGUI_ElixirCraft_AdrenalineCrash"))
+        notify(player, textOr("IGUI_ElixirCraft_AdrenalineCrash",
+            "The stimulant wears off, leaving you exhausted."))
     elseif command == "UsageAnnouncement" then
         notify(player, getText("IGUI_ElixirCraft_GlobalUse",
             args.username or "unknown", args.treatment or "treatment"))

@@ -15,6 +15,12 @@ local function notify(player, text)
     end
 end
 
+local function textOr(key, fallback, ...)
+    local value = getText(key, ...)
+    if not value or value == key then return fallback end
+    return value
+end
+
 local function selectedItem(entry)
     if instanceof(entry, "InventoryItem") then return entry end
     if type(entry) == "table" and entry.items and entry.items[1] then
@@ -34,8 +40,10 @@ local function useSinglePlayer(player, item, treatment)
     local ok, reason, detail = ElixirConsumption.ValidateTreatment(player, treatment)
     if not ok then
         notify(player, reason == "cooldown"
-            and getText("IGUI_ElixirCraft_Cooldown", detail or 1)
-            or getText("IGUI_ElixirCraft_TreatmentRejectedKept"))
+            and textOr("IGUI_ElixirCraft_Cooldown",
+                "Your body needs more time before another elixir.", detail or 1)
+            or textOr("IGUI_ElixirCraft_TreatmentRejectedKept",
+                "The treatment was rejected. The item remains in your inventory."))
         return
     end
 
@@ -78,8 +86,10 @@ local function addContextOptions(playerIndex, context, items)
         local treatment = fullType and treatments[fullType]
         if treatment and not added[treatment] then
             local label = treatment == "KnoxCure"
-                and getText("ContextMenu_ElixirCraft_UseKnoxCure")
-                or getText("ContextMenu_ElixirCraft_UseAdrenaline")
+                and textOr("ContextMenu_ElixirCraft_UseKnoxCure",
+                    "Use Experimental Knox Cure")
+                or textOr("ContextMenu_ElixirCraft_UseAdrenaline",
+                    "Use Adrenaline Stimulant")
             context:addOption(label, player, requestUse, item, treatment)
             added[treatment] = true
         end

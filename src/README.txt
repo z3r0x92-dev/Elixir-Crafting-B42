@@ -1,4 +1,4 @@
-ELIXIR CRAFTING B42 v1.4.1
+ELIXIR CRAFTING B42 v1.4.2
 ========================================
 
 MOD ID

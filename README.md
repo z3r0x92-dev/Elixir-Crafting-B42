@@ -7,7 +7,7 @@ A lightweight Project Zomboid Build 42 mod that adds two configurable emergency 
 
 The cure integrates with **Antibodies v1.97** when it is installed. Antibodies remains the condition-based recovery path, while the Experimental Knox Cure provides a rare guaranteed alternative.
 
-> Status: v1.4.1 test release. Structure and static validation pass, but the server-owned transaction must complete two-client Build 42.20 multiplayer testing before stable publication.
+> Status: v1.4.2 test release. Structure and static validation pass, but the synchronized server-owned transaction must complete two-client Build 42.20 multiplayer testing before stable publication.
 
 ## Features
 
@@ -116,7 +116,7 @@ Alternatively, run:
 powershell -ExecutionPolicy Bypass -File .\tools\build-release.ps1
 ```
 
-Then extract `dist\ElixirCraftB42-v1.4.1.zip` into `%USERPROFILE%\Zomboid\mods`.
+Then extract `dist\ElixirCraftB42-v1.4.2.zip` into `%USERPROFILE%\Zomboid\mods`.
 
 ## Steam Workshop package
 

@@ -7,6 +7,13 @@ All notable changes to this project will be documented here.
 - In-game Build 42.20 multiplayer validation.
 - Balance review for cure ingredients and cooldowns.
 
+## [1.4.2] - 2026-08-17
+
+- Explicitly synchronize successful server-side item removal to multiplayer clients.
+- Synchronize exact-item restoration when a configured rejection returns an elixir.
+- Remove consumed elixirs from the player's hands before deleting them.
+- Add readable English fallbacks when custom context-menu or notification translations are unavailable.
+
 ## [1.4.1] - 2026-08-17
 
 ### Security

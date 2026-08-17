@@ -68,8 +68,27 @@ end
 
 local function restoreItem(container, item)
     if not container or not item then return false end
-    local restored = pcall(function() container:AddItem(item) end)
-    return restored
+    local restored, result = pcall(function()
+        local added = container:AddItem(item)
+        if sendAddItemToContainer then
+            sendAddItemToContainer(container, item)
+        end
+        return added ~= nil
+    end)
+    return restored and result
+end
+
+local function removeItem(player, container, item)
+    if not container or not item then return false end
+    local removed, result = pcall(function()
+        if player and player.removeFromHands then player:removeFromHands(item) end
+        container:Remove(item)
+        if sendRemoveItemFromContainer then
+            sendRemoveItemFromContainer(container, item)
+        end
+        return true
+    end)
+    return removed and result
 end
 
 local function onClientCommand(module, command, player, args)
@@ -116,7 +135,10 @@ local function onClientCommand(module, command, player, args)
         return
     end
 
-    container:Remove(item)
+    if not removeItem(player, container, item) then
+        reject(player, args, "item-remove-failed")
+        return
+    end
     local applied, applyOk, applyReason, applyDetail = pcall(
         ElixirConsumption.ApplyTreatment, player, treatment)
     if applied then

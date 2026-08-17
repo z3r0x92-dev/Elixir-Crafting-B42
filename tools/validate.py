@@ -28,7 +28,7 @@ sandbox_en = require(
 
 for expected in (
     "id=ElixirCraftB42",
-    "modversion=1.4.1",
+    "modversion=1.4.2",
     "poster=poster.png",
 ):
     if expected not in mod_info:
@@ -73,6 +73,8 @@ for marker in (
     "Never mint inventory from client-provided counts",
     "findItem(player:getInventory(), itemId, expectedType)",
     "container:Remove(item)",
+    "sendRemoveItemFromContainer(container, item)",
+    "sendAddItemToContainer(container, item)",
     "pcall(\n        ElixirConsumption.ApplyTreatment",
     "Events.OnPlayerUpdate.Add(onPlayerUpdate)",
     "Events.OnClientCommand.Add(onClientCommand)",
@@ -94,7 +96,7 @@ for marker in (
         errors.append(f"Antibodies fallback missing marker: {marker}")
 
 if "default = 12.0," not in sandbox:
-    errors.append("v1.4.1 overdose window must default to 12 in-game hours")
+    errors.append("the overdose window must default to 12 in-game hours")
 
 translations = set(re.findall(r"translation\s*=\s*([A-Za-z0-9_]+)", sandbox))
 for key in sorted(translations):

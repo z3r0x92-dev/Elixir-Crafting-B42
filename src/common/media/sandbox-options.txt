@@ -1,0 +1,71 @@
+VERSION = 1,
+
+option ElixirCraftB42.EnableKnoxCure
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableKnoxCure,
+}
+
+option ElixirCraftB42.EnableKnoxCureCrafting
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableKnoxCureCrafting,
+}
+
+option ElixirCraftB42.KnoxCureCooldownHours
+{
+    type = double,
+    min = 0.0,
+    max = 168.0,
+    default = 24.0,
+    page = ElixirCraftB42,
+    translation = KnoxCureCooldownHours,
+}
+
+option ElixirCraftB42.EnableAdrenalineStimulant
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableAdrenalineStimulant,
+}
+
+option ElixirCraftB42.AdrenalineRestorePercent
+{
+    type = double,
+    min = 1.0,
+    max = 100.0,
+    default = 100.0,
+    page = ElixirCraftB42,
+    translation = AdrenalineRestorePercent,
+}
+
+option ElixirCraftB42.ClearFatigue
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = ClearFatigue,
+}
+
+option ElixirCraftB42.AdrenalineCooldownHours
+{
+    type = double,
+    min = 0.0,
+    max = 168.0,
+    default = 6.0,
+    page = ElixirCraftB42,
+    translation = AdrenalineCooldownHours,
+}
+
+option ElixirCraftB42.EnableUsageLogging
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableUsageLogging,
+}

@@ -1,0 +1,4 @@
+Recipes_EN = {
+    Recipe_CraftKnoxCure = "Synthesize Experimental Knox Cure",
+    Recipe_CraftAdrenalineStimulant = "Prepare Adrenaline Stimulant",
+}

@@ -1,0 +1,4 @@
+ItemName_EN = {
+    ItemName_ElixirCraft.KnoxCure = "Experimental Knox Cure",
+    ItemName_ElixirCraft.StaminaElixir = "Adrenaline Stimulant",
+}

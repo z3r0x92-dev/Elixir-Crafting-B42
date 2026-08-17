@@ -1,0 +1,42 @@
+module ElixirCraft
+{
+    item KnoxCure
+    {
+        DisplayName = Experimental Knox Cure,
+        DisplayCategory = FirstAid,
+        Type = Food,
+        Icon = PotionHealth,
+        Weight = 0.2,
+        HungerChange = 0,
+        ThirstChange = 0,
+        Calories = 0,
+        Carbohydrates = 0,
+        Lipids = 0,
+        Proteins = 0,
+        DaysFresh = 1000000,
+        DaysTotallyRotten = 1000000,
+        IsCookable = FALSE,
+        CustomEatSound = DrinkingFromBottle,
+        OnEat = ElixirConsumption.OnEatKnoxCure,
+    }
+
+    item StaminaElixir
+    {
+        DisplayName = Adrenaline Stimulant,
+        DisplayCategory = FirstAid,
+        Type = Food,
+        Icon = PotionStamina,
+        Weight = 0.2,
+        HungerChange = 0,
+        ThirstChange = 0,
+        Calories = 0,
+        Carbohydrates = 0,
+        Lipids = 0,
+        Proteins = 0,
+        DaysFresh = 1000000,
+        DaysTotallyRotten = 1000000,
+        IsCookable = FALSE,
+        CustomEatSound = DrinkingFromBottle,
+        OnEat = ElixirConsumption.OnEatAdrenalineStimulant,
+    }
+}

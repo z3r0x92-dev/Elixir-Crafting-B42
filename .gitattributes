@@ -1,0 +1,9 @@
+* text=auto
+*.lua text eol=lf
+*.txt text eol=lf
+*.info text eol=lf
+*.md text eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.zip binary
+

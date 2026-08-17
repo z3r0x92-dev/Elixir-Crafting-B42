@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a reproducible Elixir Crafting problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: input
+    id: game-version
+    attributes:
+      label: Project Zomboid version
+      placeholder: "42.20.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - Single-player
+        - Hosted multiplayer
+        - Dedicated server
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Elixir Crafting version
+      placeholder: "1.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Explain exactly how to reproduce the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Paste only the relevant console excerpt. Remove passwords and secrets.
+      render: text
+

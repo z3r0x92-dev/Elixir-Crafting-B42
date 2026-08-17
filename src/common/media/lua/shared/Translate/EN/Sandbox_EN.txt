@@ -1,0 +1,13 @@
+Sandbox_EN = {
+    Sandbox_ElixirCraftB42 = "Elixir Crafting",
+    Sandbox_ElixirCraftB42_EnableKnoxCure = "Enable Experimental Knox Cure",
+    Sandbox_ElixirCraftB42_EnableKnoxCure_tooltip = "Controls consumption of the guaranteed cure. Antibodies is supported but not required.",
+    Sandbox_ElixirCraftB42_EnableKnoxCureCrafting = "Allow players to craft the Knox Cure",
+    Sandbox_ElixirCraftB42_EnableKnoxCureCrafting_tooltip = "Disable this to reserve the cure for admin rewards, events, or server vendors.",
+    Sandbox_ElixirCraftB42_KnoxCureCooldownHours = "Knox Cure cooldown (in-game hours)",
+    Sandbox_ElixirCraftB42_EnableAdrenalineStimulant = "Enable Adrenaline Stimulant",
+    Sandbox_ElixirCraftB42_AdrenalineRestorePercent = "Endurance restored (%)",
+    Sandbox_ElixirCraftB42_ClearFatigue = "Remove fatigue",
+    Sandbox_ElixirCraftB42_AdrenalineCooldownHours = "Adrenaline cooldown (in-game hours)",
+    Sandbox_ElixirCraftB42_EnableUsageLogging = "Log potion usage",
+}

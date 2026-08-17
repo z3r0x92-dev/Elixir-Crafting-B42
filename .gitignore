@@ -1,0 +1,10 @@
+dist/
+*.zip
+*.log
+console.txt
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+workshop/workshop.txt
+

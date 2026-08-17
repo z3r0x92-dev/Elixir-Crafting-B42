@@ -1,0 +1,40 @@
+module ElixirCraft
+{
+    craftRecipe CraftKnoxCure
+    {
+        Time = 100,
+        Tags = InHandCraft;Health,
+        category = Medical,
+        OnTest = ElixirConsumption.CanCraftKnoxCure,
+        inputs
+        {
+            item 1 [Base.WaterBottle;Base.MugWhite] mode:keep,
+            -fluid 0.5 [Water],
+            item 5 [Base.Plantain] mode:destroy,
+            item 5 [Base.Ginseng] mode:destroy,
+            item 1 [Base.Antibiotics] mode:destroy,
+        }
+        outputs
+        {
+            item 1 ElixirCraft.KnoxCure,
+        }
+    }
+
+    craftRecipe CraftAdrenalineStimulant
+    {
+        Time = 100,
+        Tags = InHandCraft;Health,
+        category = Medical,
+        OnTest = ElixirConsumption.CanCraftAdrenalineStimulant,
+        inputs
+        {
+            item 1 [Base.WaterBottle;Base.MugWhite] mode:keep,
+            -fluid 0.5 [Water],
+            item 5 [Base.Ginseng] mode:destroy,
+        }
+        outputs
+        {
+            item 1 ElixirCraft.StaminaElixir,
+        }
+    }
+}

@@ -1,4 +1,4 @@
-ELIXIR CRAFTING B42 v1.2.0
+ELIXIR CRAFTING B42 v1.3.0
 ========================================
 
 MOD ID
@@ -20,6 +20,9 @@ DEFAULT BALANCE
 - Cure cooldown: 24 in-game hours.
 - Adrenaline Stimulant: full endurance/fatigue recovery, 6-hour cooldown.
 - Usage logging: enabled.
+- Antibodies integration: enabled when the compatible module is detected.
+- Rare medical-container loot: disabled by default.
+- First Aid requirements and stimulant side effects: disabled by default.
 
 ANTIBODIES COMPATIBILITY
 - Compatible with Antibodies v1.97 (Workshop ID 2392676812).
@@ -27,6 +30,11 @@ ANTIBODIES COMPATIBILITY
 - The Experimental Knox Cure is the separate guaranteed recovery path.
 - Cure use invokes Antibodies' own cure method and resets its cached levels.
 - Antibodies is supported but not required; this add-on remains standalone.
+
+MULTIPLAYER
+- Treatment effects and cooldown decisions are validated by the server.
+- Rejected treatment requests return the consumed item when possible.
+- Dedicated-server logging records validated use.
 
 ADMIN COMMANDS
 additem "Username" "ElixirCraft.KnoxCure" 1

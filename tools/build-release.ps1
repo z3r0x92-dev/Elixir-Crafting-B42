@@ -1,5 +1,5 @@
 param(
-    [string]$Version = "1.2.0"
+    [string]$Version = "1.3.0"
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,4 +27,3 @@ Compress-Archive -LiteralPath $modRoot -DestinationPath $archivePath -Compressio
 Remove-Item -LiteralPath $stagingRoot -Recurse -Force
 
 Write-Host "Created $archivePath"
-

@@ -16,6 +16,51 @@ option ElixirCraftB42.EnableKnoxCureCrafting
     translation = EnableKnoxCureCrafting,
 }
 
+option ElixirCraftB42.KnoxCureMedicalLevel
+{
+    type = integer,
+    min = 0,
+    max = 10,
+    default = 6,
+    page = ElixirCraftB42,
+    translation = KnoxCureMedicalLevel,
+}
+
+option ElixirCraftB42.ConsumeCureOnFailedUse
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = ConsumeCureOnFailedUse,
+}
+
+option ElixirCraftB42.CureTreatmentScope
+{
+    type = enum,
+    numValues = 4,
+    default = 2,
+    page = ElixirCraftB42,
+    translation = CureTreatmentScope,
+}
+
+option ElixirCraftB42.CureEffectiveness
+{
+    type = double,
+    min = 1.0,
+    max = 100.0,
+    default = 100.0,
+    page = ElixirCraftB42,
+    translation = CureEffectiveness,
+}
+
+option ElixirCraftB42.OneCurePerCharacter
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = OneCurePerCharacter,
+}
+
 option ElixirCraftB42.KnoxCureCooldownHours
 {
     type = double,
@@ -34,12 +79,30 @@ option ElixirCraftB42.EnableAdrenalineStimulant
     translation = EnableAdrenalineStimulant,
 }
 
+option ElixirCraftB42.EnableAdrenalineCrafting
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableAdrenalineCrafting,
+}
+
+option ElixirCraftB42.AdrenalineMedicalLevel
+{
+    type = integer,
+    min = 0,
+    max = 10,
+    default = 3,
+    page = ElixirCraftB42,
+    translation = AdrenalineMedicalLevel,
+}
+
 option ElixirCraftB42.AdrenalineRestorePercent
 {
     type = double,
     min = 1.0,
     max = 100.0,
-    default = 100.0,
+    default = 70.0,
     page = ElixirCraftB42,
     translation = AdrenalineRestorePercent,
 }
@@ -47,9 +110,95 @@ option ElixirCraftB42.AdrenalineRestorePercent
 option ElixirCraftB42.ClearFatigue
 {
     type = boolean,
-    default = true,
+    default = false,
     page = ElixirCraftB42,
     translation = ClearFatigue,
+}
+
+option ElixirCraftB42.StimulantEffectDurationHours
+{
+    type = double,
+    min = 0.0,
+    max = 24.0,
+    default = 1.0,
+    page = ElixirCraftB42,
+    translation = StimulantEffectDurationHours,
+}
+
+option ElixirCraftB42.EnableStimulantPostCrash
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableStimulantPostCrash,
+}
+
+option ElixirCraftB42.StimulantCrashFatigue
+{
+    type = double,
+    min = 0.0,
+    max = 1.0,
+    default = 0.35,
+    page = ElixirCraftB42,
+    translation = StimulantCrashFatigue,
+}
+
+option ElixirCraftB42.StimulantOverdoseWindowHours
+{
+    type = double,
+    min = 0.0,
+    max = 168.0,
+    default = 12.0,
+    page = ElixirCraftB42,
+    translation = StimulantOverdoseWindowHours,
+}
+
+option ElixirCraftB42.StimulantOverdoseHealthLoss
+{
+    type = double,
+    min = 0.0,
+    max = 100.0,
+    default = 10.0,
+    page = ElixirCraftB42,
+    translation = StimulantOverdoseHealthLoss,
+}
+
+option ElixirCraftB42.ReturnRejectedStimulant
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = ReturnRejectedStimulant,
+}
+
+option ElixirCraftB42.AdrenalinePanic
+{
+    type = integer,
+    min = 0,
+    max = 100,
+    default = 0,
+    page = ElixirCraftB42,
+    translation = AdrenalinePanic,
+}
+
+option ElixirCraftB42.AdrenalineStress
+{
+    type = double,
+    min = 0.0,
+    max = 1.0,
+    default = 0.0,
+    page = ElixirCraftB42,
+    translation = AdrenalineStress,
+}
+
+option ElixirCraftB42.AdrenalineThirst
+{
+    type = double,
+    min = 0.0,
+    max = 1.0,
+    default = 0.0,
+    page = ElixirCraftB42,
+    translation = AdrenalineThirst,
 }
 
 option ElixirCraftB42.AdrenalineCooldownHours
@@ -62,10 +211,119 @@ option ElixirCraftB42.AdrenalineCooldownHours
     translation = AdrenalineCooldownHours,
 }
 
+option ElixirCraftB42.EnableAntibodiesIntegration
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = EnableAntibodiesIntegration,
+}
+
+option ElixirCraftB42.EnableLootSpawns
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = EnableLootSpawns,
+}
+
+option ElixirCraftB42.LootPharmacies
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = LootPharmacies,
+}
+
+option ElixirCraftB42.LootHospitals
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = LootHospitals,
+}
+
+option ElixirCraftB42.LootAmbulances
+{
+    type = boolean,
+    default = true,
+    page = ElixirCraftB42,
+    translation = LootAmbulances,
+}
+
+option ElixirCraftB42.LootMilitaryMedical
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = LootMilitaryMedical,
+}
+
+option ElixirCraftB42.LootLaboratories
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = LootLaboratories,
+}
+
+option ElixirCraftB42.LootSurvivorCaches
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = LootSurvivorCaches,
+}
+
+option ElixirCraftB42.KnoxCureLootChance
+{
+    type = double,
+    min = 0.0,
+    max = 100.0,
+    default = 0.05,
+    page = ElixirCraftB42,
+    translation = KnoxCureLootChance,
+}
+
+option ElixirCraftB42.AdrenalineLootChance
+{
+    type = double,
+    min = 0.0,
+    max = 100.0,
+    default = 0.25,
+    page = ElixirCraftB42,
+    translation = AdrenalineLootChance,
+}
+
+option ElixirCraftB42.AdminOnlyCrafting
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = AdminOnlyCrafting,
+}
+
+option ElixirCraftB42.UsageAnnouncement
+{
+    type = enum,
+    numValues = 4,
+    default = 2,
+    page = ElixirCraftB42,
+    translation = UsageAnnouncement,
+}
+
 option ElixirCraftB42.EnableUsageLogging
 {
     type = boolean,
     default = true,
     page = ElixirCraftB42,
     translation = EnableUsageLogging,
+}
+
+option ElixirCraftB42.EnableDebugLogging
+{
+    type = boolean,
+    default = false,
+    page = ElixirCraftB42,
+    translation = EnableDebugLogging,
 }

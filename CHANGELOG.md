@@ -7,6 +7,25 @@ All notable changes to this project will be documented here.
 - In-game Build 42.20 multiplayer validation.
 - Balance review for cure ingredients and cooldowns.
 
+## [1.3.0] - 2026-08-17
+
+### Added
+
+- Server-authoritative multiplayer treatment application.
+- Server-side cooldown validation and treatment-use logging.
+- Cooldown rejection item return.
+- Per-player request rate limiting.
+- Optional Antibodies integration toggle.
+- Configurable First Aid requirements for both recipes.
+- Optional rare medical-container loot with separate item chances.
+- Optional stimulant panic, stress, and thirst costs.
+- Automated repository validation and Lua compile checks.
+
+### Changed
+
+- Updated package and documentation version to 1.3.0.
+- Expanded multiplayer test requirements.
+
 ## [1.2.0] - 2026-08-17
 
 ### Added
@@ -31,4 +50,3 @@ All notable changes to this project will be documented here.
 ## [1.1.0] - 2026-08-17
 
 - Initial configurable health and stamina prototype.
-

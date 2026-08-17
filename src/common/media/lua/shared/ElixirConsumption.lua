@@ -2,12 +2,16 @@ ElixirConsumption = ElixirConsumption or {}
 
 local MOD_DATA_KEY = "ElixirCraftB42"
 local MODULE = "ElixirCraftB42"
+local antibodiesChecked = false
+local antibodiesModule = nil
 
 local function setting(name, fallback)
     local options = SandboxVars and SandboxVars.ElixirCraftB42
     if options and options[name] ~= nil then return options[name] end
     return fallback
 end
+
+ElixirConsumption.Setting = setting
 
 local function worldHours()
     local gameTime = getGameTime()
@@ -66,19 +70,35 @@ local function rollPercent(chance)
     return false
 end
 
+local function resolveAntibodies()
+    if antibodiesChecked then return antibodiesModule end
+    antibodiesChecked = true
+    local loaded, result = pcall(require, "antibodies_medical_file")
+    if loaded then
+        antibodiesModule = result
+    elseif setting("EnableDebugLogging", false) then
+        print("[ElixirCraftB42] DEBUG Antibodies module unavailable: " .. tostring(result))
+    end
+    return antibodiesModule
+end
+
 local function cureKnoxInfection(player)
     if setting("EnableAntibodiesIntegration", true) then
-        local loaded, medicalFileModule = pcall(require, "antibodies_medical_file")
-        if loaded and medicalFileModule and medicalFileModule.of then
-            local medicalFile = medicalFileModule.of(player, false)
-            if medicalFile and medicalFile.cureKnoxVirus then
-                medicalFile:cureKnoxVirus(player)
-                medicalFile.knoxInfectionLevel = 0
-                medicalFile.knoxInfectionDelta = 0
-                medicalFile.knoxAntibodiesLevel = 0
-                if medicalFile.updateKnoxInfection then medicalFile:updateKnoxInfection(player) end
-                return "Antibodies"
+        local integrationOk, provider = pcall(function()
+            local medicalFileModule = resolveAntibodies()
+            if medicalFileModule and medicalFileModule.of then
+                local medicalFile = medicalFileModule.of(player, false)
+                if medicalFile and medicalFile.cureKnoxVirus then
+                    medicalFile:cureKnoxVirus(player)
+                    return "Antibodies"
+                end
             end
+            return nil
+        end)
+        if integrationOk and provider then return provider end
+        if not integrationOk then
+            print("[ElixirCraftB42] WARN Antibodies integration failed; using vanilla cure fallback: "
+                .. tostring(provider))
         end
     end
 
@@ -109,18 +129,19 @@ local function clearBitesAndWounds(damage, scope)
     end
 end
 
-local function applyPostCrash(player)
+function ElixirConsumption.ProcessPostCrash(player)
+    if not validPlayer(player) then return false end
     local state = stateFor(player)
     local due = tonumber(state.adrenalineCrashAt)
-    if not due or worldHours() < due then return end
+    if not due or worldHours() < due then return false end
     state.adrenalineCrashAt = nil
-    if not setting("EnableStimulantPostCrash", true) then return end
+    if not setting("EnableStimulantPostCrash", true) then return false end
     local stats = player:getStats()
-    if not stats then return end
+    if not stats then return false end
     local fatigue = math.max(0, math.min(1,
         tonumber(setting("StimulantCrashFatigue", 0.35)) or 0.35))
     stats:setFatigue(math.max(stats:getFatigue(), fatigue))
-    notify(player, getText("IGUI_ElixirCraft_AdrenalineCrash"))
+    return true
 end
 
 local function logUse(player, treatment, provider)
@@ -143,6 +164,26 @@ function ElixirConsumption.GetRemainingCooldown(player, treatment)
         tonumber(setting("AdrenalineCooldownHours", 6.0)) or 6.0)
 end
 
+function ElixirConsumption.ValidateTreatment(player, treatment)
+    if not validPlayer(player) then return false, "invalid-player" end
+    local remaining = ElixirConsumption.GetRemainingCooldown(player, treatment)
+    if remaining > 0 then return false, "cooldown", math.ceil(remaining) end
+    if treatment == "KnoxCure" then
+        if not setting("EnableKnoxCure", true) then return false, "disabled" end
+        if setting("OneCurePerCharacter", false) and stateFor(player).usedKnoxCure then
+            return false, "one-cure-limit"
+        end
+        if not player:getBodyDamage() then return false, "no-body-damage" end
+        return true
+    end
+    if treatment == "AdrenalineStimulant" then
+        if not setting("EnableAdrenalineStimulant", true) then return false, "disabled" end
+        if not player:getStats() then return false, "no-stats" end
+        return true
+    end
+    return false, "unknown-treatment"
+end
+
 function ElixirConsumption.CanCraftKnoxCure(recipeData)
     local player = recipePlayer(recipeData)
     return setting("EnableKnoxCure", true)
@@ -160,22 +201,15 @@ function ElixirConsumption.CanCraftAdrenalineStimulant(recipeData)
 end
 
 function ElixirConsumption.ApplyTreatment(player, treatment)
-    if not validPlayer(player) then return false, "invalid-player" end
-
-    local remaining = ElixirConsumption.GetRemainingCooldown(player, treatment)
-    if remaining > 0 then return false, "cooldown", math.ceil(remaining) end
+    local valid, reason, detail = ElixirConsumption.ValidateTreatment(player, treatment)
+    if not valid then return false, reason, detail end
 
     if treatment == "KnoxCure" then
-        if not setting("EnableKnoxCure", true) then return false, "disabled" end
         local state = stateFor(player)
-        if setting("OneCurePerCharacter", false) and state.usedKnoxCure then
-            return false, "one-cure-limit"
-        end
         if not rollPercent(setting("CureEffectiveness", 100.0)) then
             return false, "ineffective"
         end
         local damage = player:getBodyDamage()
-        if not damage then return false, "no-body-damage" end
         local provider = cureKnoxInfection(player)
         local scope = math.max(1, math.min(4,
             tonumber(setting("CureTreatmentScope", 2)) or 2))
@@ -191,14 +225,12 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
     end
 
     if treatment == "AdrenalineStimulant" then
-        if not setting("EnableAdrenalineStimulant", true) then return false, "disabled" end
         local state = stateFor(player)
         local previousUse = tonumber(state.lastAdrenalineUse) or -1000000
         local overdoseWindow = math.max(0,
-            tonumber(setting("StimulantOverdoseWindowHours", 6.0)) or 6.0)
+            tonumber(setting("StimulantOverdoseWindowHours", 12.0)) or 12.0)
         local overdosed = overdoseWindow > 0 and worldHours() - previousUse < overdoseWindow
         local stats = player:getStats()
-        if not stats then return false, "no-stats" end
         local restore = math.max(1, math.min(100,
             tonumber(setting("AdrenalineRestorePercent", 100.0)) or 100.0)) / 100
         stats:setEndurance(math.min(1.0, stats:getEndurance() + restore))
@@ -231,56 +263,6 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
     return false, "unknown-treatment"
 end
 
-local function countAfterUse(player, fullType)
-    local inventory = player and player:getInventory()
-    if not inventory or not inventory.getItemCountRecurse then return 0 end
-    return inventory:getItemCountRecurse(fullType)
-end
-
-local function returnRejectedItem(player, treatment, fullType)
-    local shouldReturn = treatment == "KnoxCure"
-        and not setting("ConsumeCureOnFailedUse", false)
-        or treatment == "AdrenalineStimulant"
-        and setting("ReturnRejectedStimulant", true)
-    local inventory = player and player:getInventory()
-    if shouldReturn and inventory then inventory:AddItem(fullType) end
-end
-
-local function requestTreatment(player, treatment, fullType)
-    if not validPlayer(player) then return end
-    if isClient and isClient() then
-        sendClientCommand(MODULE, "UseTreatment", {
-            treatment = treatment,
-            itemType = fullType,
-            countAfter = countAfterUse(player, fullType),
-        })
-        return
-    end
-
-    local ok, reason, detail = ElixirConsumption.ApplyTreatment(player, treatment)
-    if ok then
-        notify(player, getText(treatment == "KnoxCure"
-            and "IGUI_ElixirCraft_KnoxCureUsed"
-            or "IGUI_ElixirCraft_AdrenalineUsed"))
-    elseif reason == "cooldown" then
-        returnRejectedItem(player, treatment, fullType)
-        notify(player, getText("IGUI_ElixirCraft_Cooldown", detail))
-    else
-        returnRejectedItem(player, treatment, fullType)
-        notify(player, getText("IGUI_ElixirCraft_TreatmentRejected"))
-    end
-end
-
-function ElixirConsumption.OnEatKnoxCure(item, player, amount)
-    if amount and amount < 0.99 then return end
-    requestTreatment(player, "KnoxCure", "ElixirCraft.KnoxCure")
-end
-
-function ElixirConsumption.OnEatAdrenalineStimulant(item, player, amount)
-    if amount and amount < 0.99 then return end
-    requestTreatment(player, "AdrenalineStimulant", "ElixirCraft.StaminaElixir")
-end
-
 local function onServerCommand(module, command, args)
     if module ~= MODULE or not getPlayer then return end
     local player = getPlayer()
@@ -292,9 +274,13 @@ local function onServerCommand(module, command, args)
     elseif command == "TreatmentRejected" then
         if args.reason == "cooldown" then
             notify(player, getText("IGUI_ElixirCraft_Cooldown", args.remaining or 1))
+        elseif args.itemKept then
+            notify(player, getText("IGUI_ElixirCraft_TreatmentRejectedKept"))
         else
             notify(player, getText("IGUI_ElixirCraft_TreatmentRejected"))
         end
+    elseif command == "StimulantCrash" then
+        notify(player, getText("IGUI_ElixirCraft_AdrenalineCrash"))
     elseif command == "UsageAnnouncement" then
         notify(player, getText("IGUI_ElixirCraft_GlobalUse",
             args.username or "unknown", args.treatment or "treatment"))
@@ -303,8 +289,4 @@ end
 
 if Events and Events.OnServerCommand and isClient and isClient() then
     Events.OnServerCommand.Add(onServerCommand)
-end
-
-if Events and Events.OnPlayerUpdate then
-    Events.OnPlayerUpdate.Add(applyPostCrash)
 end

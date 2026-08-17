@@ -1,13 +1,13 @@
 # Elixir Crafting — Knox Cure & Adrenaline (Build 42)
 
-A lightweight Project Zomboid Build 42 mod that adds two configurable emergency treatments for single-player and multiplayer. Multiplayer treatment effects, cooldowns, and logs are validated by the server.
+A lightweight Project Zomboid Build 42 mod that adds two configurable emergency treatments for single-player and multiplayer. Multiplayer inventory consumption, treatment effects, cooldowns, and logs are controlled by the server.
 
-- **Experimental Knox Cure** — guarantees removal of the Knox infection and restores the character to full physical health.
+- **Experimental Knox Cure** — removes the Knox infection and applies the configured treatment scope.
 - **Adrenaline Stimulant** — restores endurance and optionally clears fatigue.
 
 The cure integrates with **Antibodies v1.97** when it is installed. Antibodies remains the condition-based recovery path, while the Experimental Knox Cure provides a rare guaranteed alternative.
 
-> Status: pre-release. The script and archive structure have been validated, but the mod must complete in-game Build 42.20 multiplayer testing before a stable release is published.
+> Status: v1.4.1 test release. Structure and static validation pass, but the server-owned transaction must complete two-client Build 42.20 multiplayer testing before stable publication.
 
 ## Features
 
@@ -16,12 +16,12 @@ The cure integrates with **Antibodies v1.97** when it is installed. Antibodies r
 - Optional Antibodies v1.97 integration
 - Configurable crafting availability
 - Persistent per-character cooldowns
-- Server-authoritative multiplayer treatment application
-- Cooldown-safe rejection with item return
+- Server-owned multiplayer inventory consumption and treatment application
+- Exact-item validation with fail-closed rejection behavior
 - Configurable stamina restoration
 - Optional fatigue removal
 - Optional stimulant panic, stress, and thirst costs
-- Configurable stimulant duration, overdose window, and post-crash fatigue
+- Configurable stimulant duration, overdose window, and server-authoritative post-crash fatigue
 - Configurable cure effectiveness and treatment scope
 - Optional one-cure-per-character and admin-only crafting rules
 - Configurable First Aid crafting requirements
@@ -58,6 +58,9 @@ Admin examples:
 additem "Username" "ElixirCraft.KnoxCure" 1
 additem "Username" "ElixirCraft.StaminaElixir" 1
 ```
+
+Right-click an elixir in the inventory and choose its **Use** action. In multiplayer,
+the server verifies and removes that exact item before applying the treatment.
 
 ## Recipes
 
@@ -113,7 +116,7 @@ Alternatively, run:
 powershell -ExecutionPolicy Bypass -File .\tools\build-release.ps1
 ```
 
-Then extract `dist\ElixirCraftB42-v1.4.0.zip` into `%USERPROFILE%\Zomboid\mods`.
+Then extract `dist\ElixirCraftB42-v1.4.1.zip` into `%USERPROFILE%\Zomboid\mods`.
 
 ## Steam Workshop package
 
@@ -142,7 +145,7 @@ After publication, configure the server with both Workshop IDs and Mod IDs:
 
 ```ini
 WorkshopItems=2392676812;ELIXIR_WORKSHOP_ID
-Mods=lgd_antibodies;ElixirCraftB42
+Mods=\lgd_antibodies;\ElixirCraftB42
 ```
 
 Antibodies is optional at the code level. Remove its Workshop and Mod IDs if the server does not use it.
@@ -170,8 +173,10 @@ Before publishing a stable release, verify:
 6. Sandbox settings appear in hosted and dedicated-server configuration.
 7. A remote multiplayer client receives the same results as the host.
 8. `console.txt` contains no Lua exceptions or repeated warnings.
-9. A cooldown rejection returns the consumed item without duplicating it.
-10. Disabled loot spawning adds no items to newly generated containers.
+9. A forged request without the exact inventory item is rejected without applying treatment.
+10. A cooldown rejection leaves the exact item in inventory without duplicating it.
+11. A configured failed treatment returns the same removed item object once.
+12. Disabled loot spawning adds no items to newly generated containers.
 
 ## Automated validation
 

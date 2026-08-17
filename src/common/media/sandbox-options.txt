@@ -148,7 +148,7 @@ option ElixirCraftB42.StimulantOverdoseWindowHours
     type = double,
     min = 0.0,
     max = 168.0,
-    default = 6.0,
+    default = 12.0,
     page = ElixirCraftB42,
     translation = StimulantOverdoseWindowHours,
 }

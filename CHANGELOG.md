@@ -7,6 +7,27 @@ All notable changes to this project will be documented here.
 - In-game Build 42.20 multiplayer validation.
 - Balance review for cure ingredients and cooldowns.
 
+## [1.4.1] - 2026-08-17
+
+### Security
+
+- Replaced client-trusted consumption with a server-owned inventory transaction.
+- Treatment requests now include an item instance ID that the server must locate.
+- The server removes the exact item before applying a treatment.
+- Rejected pre-validation requests leave inventory untouched.
+- Removed client-controlled inventory counts and replacement-item minting.
+- Added request-cache expiry and protected treatment execution.
+
+### Changed
+
+- Elixirs are used from a right-click inventory action instead of food consumption.
+- Post-stimulant crash effects now run on the server and notify the client.
+- Default overdose window increased from 6 to 12 hours.
+- Antibodies discovery is cached and integration failures include diagnostic detail.
+- Antibodies public cure behavior is preferred over direct internal-field mutation.
+- Workshop packaging defaults to public visibility.
+- Updated item definitions to current Build 42 `ItemType` syntax.
+
 ## [1.4.0] - 2026-08-17
 
 ### Added

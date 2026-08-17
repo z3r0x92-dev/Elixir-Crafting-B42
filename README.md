@@ -1,6 +1,6 @@
 # Elixir Crafting — Knox Cure & Adrenaline (Build 42)
 
-A lightweight Project Zomboid Build 42 mod that adds two configurable emergency treatments for single-player and multiplayer:
+A lightweight Project Zomboid Build 42 mod that adds two configurable emergency treatments for single-player and multiplayer. Multiplayer treatment effects, cooldowns, and logs are validated by the server.
 
 - **Experimental Knox Cure** — guarantees removal of the Knox infection and restores the character to full physical health.
 - **Adrenaline Stimulant** — restores endurance and optionally clears fatigue.
@@ -16,8 +16,13 @@ The cure integrates with **Antibodies v1.97** when it is installed. Antibodies r
 - Optional Antibodies v1.97 integration
 - Configurable crafting availability
 - Persistent per-character cooldowns
+- Server-authoritative multiplayer treatment application
+- Cooldown-safe rejection with item return
 - Configurable stamina restoration
 - Optional fatigue removal
+- Optional stimulant panic, stress, and thirst costs
+- Configurable First Aid crafting requirements
+- Optional rare medical-container loot
 - Server-console usage logging
 - English localization
 - Custom inventory icons and Workshop artwork
@@ -35,7 +40,7 @@ The cure integrates with **Antibodies v1.97** when it is installed. Antibodies r
 
 Antibodies is available at [Steam Workshop item 2392676812](https://steamcommunity.com/sharedfiles/filedetails/?id=2392676812).
 
-The add-on calls Antibodies' own cure routine when its module is available. If Antibodies is absent, it uses the native Project Zomboid infection fields.
+The add-on calls Antibodies' own cure routine when its module is available and integration is enabled. If Antibodies is absent or integration is disabled, it uses the native Project Zomboid infection fields.
 
 ## Item IDs
 
@@ -72,10 +77,16 @@ The water is consumed while the container is retained.
 - Enable Experimental Knox Cure
 - Allow players to craft the Knox Cure
 - Knox Cure cooldown in in-game hours
+- Knox Cure minimum First Aid level
 - Enable Adrenaline Stimulant
+- Adrenaline minimum First Aid level
 - Adrenaline endurance restoration percentage
 - Remove fatigue after stimulant use
+- Panic, stress, and thirst added by the stimulant
 - Adrenaline cooldown in in-game hours
+- Enable or disable Antibodies integration
+- Enable rare medical-container loot
+- Separate Cure and Adrenaline loot chances
 - Log treatment usage
 
 Disable cure crafting to reserve it for administrators, Survivor League rewards, events, or server vendors.
@@ -95,7 +106,7 @@ Alternatively, run:
 powershell -ExecutionPolicy Bypass -File .\tools\build-release.ps1
 ```
 
-Then extract `dist\ElixirCraftB42-v1.2.0.zip` into `%USERPROFILE%\Zomboid\mods`.
+Then extract `dist\ElixirCraftB42-v1.3.0.zip` into `%USERPROFILE%\Zomboid\mods`.
 
 ## Steam Workshop package
 
@@ -152,6 +163,19 @@ Before publishing a stable release, verify:
 6. Sandbox settings appear in hosted and dedicated-server configuration.
 7. A remote multiplayer client receives the same results as the host.
 8. `console.txt` contains no Lua exceptions or repeated warnings.
+9. A cooldown rejection returns the consumed item without duplicating it.
+10. Disabled loot spawning adds no items to newly generated containers.
+
+## Automated validation
+
+Run the repository validator before packaging:
+
+```text
+python tools/validate.py
+```
+
+GitHub Actions also checks the Build 42 structure, IDs, script hooks, translations,
+textures, and Lua syntax on pushes and pull requests.
 
 Please attach relevant `console.txt` excerpts and reproduction steps to bug reports.
 
@@ -166,4 +190,3 @@ This project does not redistribute Antibodies or Project Zomboid assets.
 ## License
 
 Released under the [MIT License](LICENSE).
-

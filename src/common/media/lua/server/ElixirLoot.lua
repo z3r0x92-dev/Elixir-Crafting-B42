@@ -1,10 +1,3 @@
-local MEDICAL_CONTAINERS = {
-    medical = true,
-    medicine = true,
-    firstaid = true,
-    counter = true,
-}
-
 local function setting(name, fallback)
     local options = SandboxVars and SandboxVars.ElixirCraftB42
     if options and options[name] ~= nil then return options[name] end
@@ -14,10 +7,23 @@ end
 local function isMedicalContainer(roomType, containerType)
     local room = string.lower(tostring(roomType or ""))
     local container = string.lower(tostring(containerType or ""))
-    if MEDICAL_CONTAINERS[container] then return true end
-    return string.find(room, "medical", 1, true)
-        or string.find(room, "hospital", 1, true)
-        or string.find(room, "pharmacy", 1, true)
+    local function contains(value, fragment)
+        return string.find(value, fragment, 1, true) ~= nil
+    end
+    if setting("LootPharmacies", true)
+        and (contains(room, "pharmacy") or contains(room, "drugstore")) then return true end
+    if setting("LootHospitals", true)
+        and (contains(room, "hospital") or contains(room, "medical")
+            or container == "medicine" or container == "firstaid") then return true end
+    if setting("LootAmbulances", true)
+        and (contains(room, "ambulance") or contains(container, "ambulance")) then return true end
+    if setting("LootMilitaryMedical", false)
+        and contains(room, "military") and contains(container, "medical") then return true end
+    if setting("LootLaboratories", false)
+        and (contains(room, "laboratory") or contains(room, "lab")) then return true end
+    if setting("LootSurvivorCaches", false)
+        and (contains(room, "survivor") or contains(container, "survivor")) then return true end
+    return false
 end
 
 local function roll(chance)

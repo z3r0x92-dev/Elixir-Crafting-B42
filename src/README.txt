@@ -1,4 +1,4 @@
-ELIXIR CRAFTING B42 v1.3.0
+ELIXIR CRAFTING B42 v1.4.0
 ========================================
 
 MOD ID
@@ -15,14 +15,16 @@ Append ElixirCraftB42 to the server Mods= line. After Workshop publication,
 append its Workshop ID to WorkshopItems= as well.
 
 DEFAULT BALANCE
-- Experimental Knox Cure: guaranteed infection cure and full physical recovery.
+- Experimental Knox Cure: guaranteed infection cure; infection-and-bite scope by default.
 - Cure crafting: enabled; admins can disable it for reward/event-only use.
 - Cure cooldown: 24 in-game hours.
-- Adrenaline Stimulant: full endurance/fatigue recovery, 6-hour cooldown.
+- Adrenaline Stimulant: 70% endurance recovery, fatigue preserved, 6-hour cooldown.
 - Usage logging: enabled.
 - Antibodies integration: enabled when the compatible module is detected.
 - Rare medical-container loot: disabled by default.
-- First Aid requirements and stimulant side effects: disabled by default.
+- First Aid requirements: Cure 6, Adrenaline 3.
+- Stimulant post-crash: enabled; overdose penalties are configurable.
+- Rejected items are returned by default.
 
 ANTIBODIES COMPATIBILITY
 - Compatible with Antibodies v1.97 (Workshop ID 2392676812).

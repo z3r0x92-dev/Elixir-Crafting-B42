@@ -1,7 +1,7 @@
 version=1
 id=0
 title=Elixir Crafting - Knox Cure & Adrenaline [B42]
-description=Adds an Experimental Knox Cure and Adrenaline Stimulant for Project Zomboid Build 42 multiplayer servers. Treatment effects and cooldowns are server-validated. Includes configurable crafting skill requirements, rare medical loot, stimulant side effects, server logging, custom icons, and optional Antibodies v1.97 integration.\n\nMod ID: ElixirCraftB42\nOptional dependency: Antibodies v1.97 — Workshop ID 2392676812
+description=Adds an Experimental Knox Cure and Adrenaline Stimulant for Project Zomboid Build 42 multiplayer servers. Treatment effects and cooldowns are server-validated. Includes configurable cure scope, crafting requirements, medical loot locations, stimulant overdose and post-crash effects, logging, custom icons, and optional Antibodies v1.97 integration.\n\nMod ID: ElixirCraftB42\nOptional dependency: Antibodies v1.97 — Workshop ID 2392676812
 tags=Build 42;Multiplayer;Items;Medical
 visibility=unlisted
 preview=preview.png

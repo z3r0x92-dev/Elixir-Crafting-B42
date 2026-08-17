@@ -27,7 +27,7 @@ sandbox_en = require(
 
 for expected in (
     "id=ElixirCraftB42",
-    "modversion=1.3.0",
+    "modversion=1.4.0",
     "poster=poster.png",
 ):
     if expected not in mod_info:
@@ -49,6 +49,10 @@ for recipe_id in ("CraftKnoxCure", "CraftAdrenalineStimulant"):
 for marker in (
     'sendClientCommand(MODULE, "UseTreatment"',
     "function ElixirConsumption.ApplyTreatment",
+    'setting("EnableAdrenalineCrafting", true)',
+    'setting("CureTreatmentScope", 2)',
+    'setting("StimulantOverdoseWindowHours", 6.0)',
+    "Events.OnPlayerUpdate.Add(applyPostCrash)",
 ):
     if marker not in shared:
         errors.append(f"shared treatment flow missing marker: {marker}")
@@ -65,6 +69,21 @@ translations = set(re.findall(r"translation\s*=\s*([A-Za-z0-9_]+)", sandbox))
 for key in sorted(translations):
     if f"Sandbox_ElixirCraftB42_{key}" not in sandbox_en:
         errors.append(f"missing Sandbox translation: {key}")
+
+for required_option in (
+    "KnoxCureMedicalLevel",
+    "EnableAdrenalineCrafting",
+    "CureTreatmentScope",
+    "CureEffectiveness",
+    "OneCurePerCharacter",
+    "EnableStimulantPostCrash",
+    "StimulantOverdoseWindowHours",
+    "AdminOnlyCrafting",
+    "UsageAnnouncement",
+    "EnableDebugLogging",
+):
+    if f"option ElixirCraftB42.{required_option}" not in sandbox:
+        errors.append(f"missing v1.4 Sandbox option: {required_option}")
 
 for icon in ("Item_PotionHealth.png", "Item_PotionStamina.png"):
     icon_path = SRC / "common" / "media" / "textures" / icon

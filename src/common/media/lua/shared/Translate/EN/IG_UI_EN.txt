@@ -3,4 +3,6 @@ IG_UI_EN = {
     IGUI_ElixirCraft_AdrenalineUsed = "Adrenaline surges through your body.",
     IGUI_ElixirCraft_Cooldown = "Your body needs %1 more in-game hour(s) before another elixir.",
     IGUI_ElixirCraft_TreatmentRejected = "The treatment was rejected and the item was returned.",
+    IGUI_ElixirCraft_AdrenalineCrash = "The stimulant wears off, leaving you exhausted.",
+    IGUI_ElixirCraft_GlobalUse = "%1 used %2.",
 }

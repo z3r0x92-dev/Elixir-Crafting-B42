@@ -21,9 +21,12 @@ The cure integrates with **Antibodies v1.97** when it is installed. Antibodies r
 - Configurable stamina restoration
 - Optional fatigue removal
 - Optional stimulant panic, stress, and thirst costs
+- Configurable stimulant duration, overdose window, and post-crash fatigue
+- Configurable cure effectiveness and treatment scope
+- Optional one-cure-per-character and admin-only crafting rules
 - Configurable First Aid crafting requirements
-- Optional rare medical-container loot
-- Server-console usage logging
+- Optional rare medical-container loot with location controls
+- Configurable usage announcements, server logging, and diagnostic logging
 - English localization
 - Custom inventory icons and Workshop artwork
 - No overrides of vanilla or Antibodies files
@@ -76,18 +79,22 @@ The water is consumed while the container is retained.
 
 - Enable Experimental Knox Cure
 - Allow players to craft the Knox Cure
-- Knox Cure cooldown in in-game hours
 - Knox Cure minimum First Aid level
+- Failed-use consumption, effectiveness, treatment scope, and one-cure limit
+- Knox Cure cooldown in in-game hours
 - Enable Adrenaline Stimulant
+- Allow players to craft the Adrenaline Stimulant
 - Adrenaline minimum First Aid level
 - Adrenaline endurance restoration percentage
 - Remove fatigue after stimulant use
+- Effect duration, post-crash fatigue, and overdose behavior
 - Panic, stress, and thirst added by the stimulant
 - Adrenaline cooldown in in-game hours
 - Enable or disable Antibodies integration
 - Enable rare medical-container loot
-- Separate Cure and Adrenaline loot chances
-- Log treatment usage
+- Per-location loot controls and separate item chances
+- Admin-only crafting
+- Usage announcement mode, treatment logging, and debug logging
 
 Disable cure crafting to reserve it for administrators, Survivor League rewards, events, or server vendors.
 
@@ -106,7 +113,7 @@ Alternatively, run:
 powershell -ExecutionPolicy Bypass -File .\tools\build-release.ps1
 ```
 
-Then extract `dist\ElixirCraftB42-v1.3.0.zip` into `%USERPROFILE%\Zomboid\mods`.
+Then extract `dist\ElixirCraftB42-v1.4.0.zip` into `%USERPROFILE%\Zomboid\mods`.
 
 ## Steam Workshop package
 

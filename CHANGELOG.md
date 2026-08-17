@@ -7,6 +7,28 @@ All notable changes to this project will be documented here.
 - In-game Build 42.20 multiplayer validation.
 - Balance review for cure ingredients and cooldowns.
 
+## [1.4.0] - 2026-08-17
+
+### Added
+
+- Complete Sandbox schema for all previously implemented v1.3 controls.
+- Separate Adrenaline crafting toggle.
+- Configurable cure scope, effectiveness, failed-use consumption, and one-cure limit.
+- Configurable stimulant duration, post-crash fatigue, overdose window, and health loss.
+- Rejected-stimulant item-return control.
+- Per-location loot toggles for pharmacies, hospitals, ambulances, military medical
+  containers, laboratories, and survivor caches.
+- Admin-only crafting, treatment announcement mode, and diagnostic logging settings.
+- Validation checks for the v1.4 Sandbox and gameplay controls.
+
+### Changed
+
+- Meeks Protocol defaults now use First Aid 6 for the cure and First Aid 3 for
+  Adrenaline crafting.
+- Adrenaline restores 70% endurance and does not clear fatigue by default.
+- Cure scope defaults to infection and bites instead of unconditional full healing.
+- Metadata, documentation, and release packaging now target v1.4.0.
+
 ## [1.3.0] - 2026-08-17
 
 ### Added

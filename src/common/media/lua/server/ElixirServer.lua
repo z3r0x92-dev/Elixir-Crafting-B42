@@ -3,6 +3,18 @@ require "ElixirConsumption"
 local MODULE = "ElixirCraftB42"
 local recentRequests = {}
 
+local function setting(name, fallback)
+    local options = SandboxVars and SandboxVars.ElixirCraftB42
+    if options and options[name] ~= nil then return options[name] end
+    return fallback
+end
+
+local function debugLog(message)
+    if setting("EnableDebugLogging", false) then
+        print("[ElixirCraftB42] DEBUG " .. tostring(message))
+    end
+end
+
 local function playerKey(player)
     return tostring(player:getOnlineID()) .. ":" .. tostring(player:getUsername() or "unknown")
 end
@@ -16,7 +28,13 @@ local function refundIfMissing(player, itemType, expectedCount)
 end
 
 local function reject(player, args, reason, remaining)
-    refundIfMissing(player, args.itemType, args.countAfter)
+    local returnItem = args.treatment == "KnoxCure"
+        and not setting("ConsumeCureOnFailedUse", false)
+        or args.treatment == "AdrenalineStimulant"
+        and setting("ReturnRejectedStimulant", true)
+    if returnItem then refundIfMissing(player, args.itemType, args.countAfter) end
+    debugLog(string.format("reject treatment=%s reason=%s refund=%s",
+        tostring(args.treatment), tostring(reason), tostring(returnItem)))
     sendServerCommand(player, MODULE, "TreatmentRejected", {
         treatment = args.treatment,
         reason = reason,
@@ -43,6 +61,8 @@ local function onClientCommand(module, command, player, args)
         return
     end
     recentRequests[key] = now
+    debugLog(string.format("request treatment=%s player=%s",
+        treatment, playerKey(player)))
 
     local ok, reason, detail = ElixirConsumption.ApplyTreatment(player, treatment)
     if not ok then
@@ -54,6 +74,14 @@ local function onClientCommand(module, command, player, args)
         treatment = treatment,
         provider = detail,
     })
+
+    local announcement = tonumber(setting("UsageAnnouncement", 2)) or 2
+    if announcement == 4 then
+        sendServerCommand(MODULE, "UsageAnnouncement", {
+            username = player:getUsername() or "unknown",
+            treatment = treatment,
+        })
+    end
 end
 
 Events.OnClientCommand.Add(onClientCommand)

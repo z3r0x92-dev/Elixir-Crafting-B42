@@ -1,0 +1,45 @@
+name: Project Zomboid Mod Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Lua and Build 42 audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Lua audit tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes lua5.1 luarocks
+          sudo luarocks install luacheck
+
+      - name: Validate Lua 5.1 syntax
+        shell: bash
+        run: |
+          mapfile -d '' files < <(find . -type f -name '*.lua' -not -path './.git/*' -print0)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo 'No Lua files found.'
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            echo "Checking $file"
+            luac5.1 -p "$file"
+          done
+
+      - name: Run advisory Luacheck analysis
+        continue-on-error: true
+        run: luacheck . --codes --ranges --formatter plain
+
+      - name: Audit Project Zomboid structure
+        run: python3 tools/audit_mod.py

@@ -1,8 +1,7 @@
 version=1
 id=0
-title=Elixir Crafting - Knox Cure & Adrenaline [B42]
-description=Adds an Experimental Knox Cure and Adrenaline Stimulant for Project Zomboid Build 42 multiplayer servers. The cure provides a guaranteed alternative to Antibodies recovery, removes Knox infection, and restores full physical health. The stimulant restores endurance and optionally clears fatigue. Includes native Sandbox configuration, cooldowns, logging, custom icons, and optional Antibodies v1.97 integration.\n\nMod ID: ElixirCraftB42\nOptional dependency: Antibodies v1.97 — Workshop ID 2392676812
+title=Elixir Crafting
+description=Adds rare configurable medical elixirs for Project Zomboid Build 42. v1.5.0 adds protocol-v3 compatibility checks, administrator-only recipe enforcement, localized rate-limited announcements, server-only loot guards, and stronger item rollback verification. Uses one animated bottle-drinking path with exact server item-ID validation and authoritative treatment results.\n\nMod ID: ElixirCraftB42\nOptional dependency: Antibodies v1.97 — Workshop ID 2392676812
 tags=Build 42;Multiplayer;Items;Medical
 visibility=unlisted
 preview=preview.png
-

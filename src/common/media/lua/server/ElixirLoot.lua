@@ -1,3 +1,9 @@
+if isClient and isClient() then return end
+
+ElixirCraftLoot = ElixirCraftLoot or {}
+if ElixirCraftLoot.registered then return end
+ElixirCraftLoot.registered = true
+
 local function setting(name, fallback)
     local options = SandboxVars and SandboxVars.ElixirCraftB42
     if options and options[name] ~= nil then return options[name] end

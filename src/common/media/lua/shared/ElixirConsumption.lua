@@ -2,6 +2,7 @@ ElixirConsumption = ElixirConsumption or {}
 
 local MOD_DATA_KEY = "ElixirCraftB42"
 local MODULE = "ElixirCraftB42"
+local PROTOCOL_VERSION = 3
 
 local function setting(name, fallback)
     local options = SandboxVars and SandboxVars.ElixirCraftB42
@@ -18,6 +19,10 @@ local function stateFor(player)
     local modData = player:getModData()
     modData[MOD_DATA_KEY] = modData[MOD_DATA_KEY] or {}
     return modData[MOD_DATA_KEY]
+end
+
+function ElixirConsumption.Setting(name, fallback)
+    return setting(name, fallback)
 end
 
 local function validPlayer(player)
@@ -46,6 +51,27 @@ local function medicalLevel(recipeData)
     return tonumber(player:getPerkLevel(Perks.Doctor)) or 0
 end
 
+local function recipePlayer(recipeData)
+    local player = recipeData and (recipeData.character or recipeData.player)
+    if not player and getPlayer then player = getPlayer() end
+    return player
+end
+
+local function isAdministrator(player)
+    if not player then return false end
+    if (not isClient or not isClient()) and (not isServer or not isServer()) then
+        return true
+    end
+    if not player.getAccessLevel then return not (isClient and isClient()) end
+    local access = string.lower(tostring(player:getAccessLevel() or ""))
+    return access ~= "" and access ~= "none" and access ~= "observer"
+end
+
+local function craftingAllowed(recipeData)
+    return not setting("AdminOnlyCrafting", false)
+        or isAdministrator(recipePlayer(recipeData))
+end
+
 local function cureKnoxInfection(player)
     if setting("EnableAntibodiesIntegration", true) then
         local loaded, medicalFileModule = pcall(require, "antibodies_medical_file")
@@ -63,16 +89,54 @@ local function cureKnoxInfection(player)
     end
 
     local damage = player:getBodyDamage()
-    local parts = damage:getBodyParts()
-    for i = 0, parts:size() - 1 do parts:get(i):SetInfected(false) end
     damage:setInfected(false)
     damage:setInfectionTime(-1.0)
     damage:setInfectionMortalityDuration(-1.0)
     return "Vanilla"
 end
 
+local function bodyParts(player)
+    local damage = player and player:getBodyDamage()
+    return damage, damage and damage:getBodyParts() or nil
+end
+
+local function clearBites(parts)
+    if not parts then return end
+    for i = 0, parts:size() - 1 do
+        local part = parts:get(i)
+        if part.SetBitten then part:SetBitten(false) end
+        if part.setBiteTime then part:setBiteTime(-1.0) end
+    end
+end
+
+local function clearWoundInfections(parts)
+    if not parts then return end
+    for i = 0, parts:size() - 1 do
+        local part = parts:get(i)
+        if part.SetInfected then part:SetInfected(false) end
+        if part.setWoundInfectionLevel then part:setWoundInfectionLevel(0.0) end
+    end
+end
+
+local function restoreBodyParts(parts)
+    if not parts then return end
+    for i = 0, parts:size() - 1 do
+        local part = parts:get(i)
+        if part.RestoreToFullHealth then part:RestoreToFullHealth() end
+    end
+end
+
+local function effectivenessSucceeded()
+    local effectiveness = math.max(1, math.min(100,
+        tonumber(setting("CureEffectiveness", 100.0)) or 100.0))
+    if effectiveness >= 100 then return true end
+    local roll = ZombRand and ZombRand(10000) or math.random(0, 9999)
+    return roll < math.floor(effectiveness * 100)
+end
+
 local function logUse(player, treatment, provider)
-    if not setting("EnableUsageLogging", true) then return end
+    local announcement = tonumber(setting("UsageAnnouncement", 2)) or 2
+    if not setting("EnableUsageLogging", true) and announcement ~= 2 then return end
     local username = player:getUsername() or "unknown"
     print(string.format(
         "[ElixirCraftB42] USE treatment=%s provider=%s username=%s character=%s x=%d y=%d z=%d",
@@ -94,30 +158,63 @@ end
 function ElixirConsumption.CanCraftKnoxCure(recipeData)
     return setting("EnableKnoxCure", true)
         and setting("EnableKnoxCureCrafting", true)
+        and craftingAllowed(recipeData)
         and medicalLevel(recipeData) >= (tonumber(setting("KnoxCureMedicalLevel", 0)) or 0)
 end
 
 function ElixirConsumption.CanCraftAdrenalineStimulant(recipeData)
     return setting("EnableAdrenalineStimulant", true)
+        and setting("EnableAdrenalineCrafting", true)
+        and craftingAllowed(recipeData)
         and medicalLevel(recipeData) >= (tonumber(setting("AdrenalineMedicalLevel", 0)) or 0)
 end
 
-function ElixirConsumption.ApplyTreatment(player, treatment)
+function ElixirConsumption.ValidateTreatment(player, treatment)
     if not validPlayer(player) then return false, "invalid-player" end
-
-    local remaining = ElixirConsumption.GetRemainingCooldown(player, treatment)
-    if remaining > 0 then return false, "cooldown", math.ceil(remaining) end
-
     if treatment == "KnoxCure" then
         if not setting("EnableKnoxCure", true) then return false, "disabled" end
-        local damage = player:getBodyDamage()
+        if setting("OneCurePerCharacter", false)
+            and stateFor(player).successfulKnoxCure == true then
+            return false, "cure-limit"
+        end
+    elseif treatment == "AdrenalineStimulant" then
+        if not setting("EnableAdrenalineStimulant", true) then return false, "disabled" end
+    else
+        return false, "unknown-treatment"
+    end
+    local remaining = ElixirConsumption.GetRemainingCooldown(player, treatment)
+    if remaining > 0 then return false, "cooldown", math.ceil(remaining) end
+    return true
+end
+
+function ElixirConsumption.ApplyTreatment(player, treatment)
+    local valid, validationReason, validationDetail =
+        ElixirConsumption.ValidateTreatment(player, treatment)
+    if not valid then return false, validationReason, validationDetail end
+
+    if treatment == "KnoxCure" then
+        local damage, parts = bodyParts(player)
         if not damage then return false, "no-body-damage" end
+        if not effectivenessSucceeded() then return false, "effectiveness-failed" end
         local provider = cureKnoxInfection(player)
-        damage:RestoreToFullHealth()
-        damage:setOverallBodyHealth(100.0)
-        stateFor(player).lastKnoxCureUse = worldHours()
+        local scope = math.max(1, math.min(4,
+            tonumber(setting("CureTreatmentScope", 2)) or 2))
+        if scope >= 2 then clearBites(parts) end
+        if scope >= 3 then
+            clearWoundInfections(parts)
+            restoreBodyParts(parts)
+        end
+        if scope >= 4 then
+            damage:RestoreToFullHealth()
+            damage:setOverallBodyHealth(100.0)
+        end
+        local state = stateFor(player)
+        state.lastKnoxCureUse = worldHours()
+        -- IsoPlayer modData is character-scoped and persists across relogs.
+        state.successfulKnoxCure = true
+        state.successfulKnoxCureAt = state.lastKnoxCureUse
         logUse(player, treatment, provider)
-        return true, provider
+        return true, provider, { scope = scope, healthAfter = damage:getOverallBodyHealth() }
     end
 
     if treatment == "AdrenalineStimulant" then
@@ -136,15 +233,20 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
 
         local restore = math.max(1, math.min(100,
             tonumber(setting("AdrenalineRestorePercent", 100.0)) or 100.0)) / 100
-        stats:setEndurance(math.min(1.0, stats:getEndurance() + restore))
+        local enduranceAfter = math.min(1.0, stats:getEndurance() + restore)
+        local fatigueAfter = setting("ClearFatigue", true) and 0 or stats:getFatigue()
+        local panicAfter = math.min(100, stats:getPanic()
+            + (tonumber(setting("AdrenalinePanic", 0)) or 0))
+        local stressAfter = math.min(1.0, stats:getStress()
+            + (tonumber(setting("AdrenalineStress", 0.0)) or 0.0))
+        local thirstAfter = math.min(1.0, stats:getThirst()
+            + (tonumber(setting("AdrenalineThirst", 0.0)) or 0.0))
+        stats:setEndurance(enduranceAfter)
         if setting("ClearFatigue", true) then stats:setFatigue(0) end
         stats:setEnduranceRecharging(false)
-        stats:setPanic(math.min(100, stats:getPanic()
-            + (tonumber(setting("AdrenalinePanic", 0)) or 0)))
-        stats:setStress(math.min(1.0, stats:getStress()
-            + (tonumber(setting("AdrenalineStress", 0.0)) or 0.0)))
-        stats:setThirst(math.min(1.0, stats:getThirst()
-            + (tonumber(setting("AdrenalineThirst", 0.0)) or 0.0)))
+        stats:setPanic(panicAfter)
+        stats:setStress(stressAfter)
+        stats:setThirst(thirstAfter)
 
         local healthAfter = nil
         local overdoseHealthLoss = math.max(0, math.min(100,
@@ -152,7 +254,9 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
         if overdose and overdoseHealthLoss > 0 then
             local damage = player:getBodyDamage()
             if damage and damage.getOverallBodyHealth then
-                healthAfter = math.max(0, damage:getOverallBodyHealth() - overdoseHealthLoss)
+                local healthBefore = damage:getOverallBodyHealth()
+                healthAfter = math.max(1, healthBefore - overdoseHealthLoss)
+                overdoseHealthLoss = math.max(0, healthBefore - healthAfter)
                 damage:setOverallBodyHealth(healthAfter)
             end
         end
@@ -173,6 +277,11 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
             overdose = overdose,
             overdoseHealthLoss = overdose and overdoseHealthLoss or 0,
             healthAfter = healthAfter,
+            enduranceAfter = enduranceAfter,
+            fatigueAfter = fatigueAfter,
+            panicAfter = panicAfter,
+            stressAfter = stressAfter,
+            thirstAfter = thirstAfter,
         }
     end
 
@@ -204,19 +313,14 @@ function ElixirConsumption.ProcessPostCrash(player)
     return true, fatigue
 end
 
-local function countAfterUse(player, fullType)
-    local inventory = player and player:getInventory()
-    if not inventory or not inventory.getItemCountRecurse then return 0 end
-    return inventory:getItemCountRecurse(fullType)
-end
-
-local function requestTreatment(player, treatment, fullType)
+local function requestTreatment(item, player, treatment, fullType)
     if not validPlayer(player) then return end
     if isClient and isClient() then
         sendClientCommand(MODULE, "UseTreatment", {
+            protocol = PROTOCOL_VERSION,
             treatment = treatment,
             itemType = fullType,
-            countAfter = countAfterUse(player, fullType),
+            itemId = item and tostring(item:getID()) or "",
         })
         return
     end
@@ -235,12 +339,12 @@ end
 
 function ElixirConsumption.OnEatKnoxCure(item, player, amount)
     if amount and amount < 0.99 then return end
-    requestTreatment(player, "KnoxCure", "ElixirCraft.KnoxCure")
+    requestTreatment(item, player, "KnoxCure", "ElixirCraft.KnoxCure")
 end
 
 function ElixirConsumption.OnEatAdrenalineStimulant(item, player, amount)
     if amount and amount < 0.99 then return end
-    requestTreatment(player, "AdrenalineStimulant", "ElixirCraft.StaminaElixir")
+    requestTreatment(item, player, "AdrenalineStimulant", "ElixirCraft.StaminaElixir")
 end
 
 local function onServerCommand(module, command, args)
@@ -248,40 +352,67 @@ local function onServerCommand(module, command, args)
     local player = getPlayer()
     if not player then return end
     if command == "TreatmentApplied" then
-    -- Apply the confirmed server result locally because player health and
-    -- stats are client-owned in multiplayer.
-    if args.treatment == "KnoxCure" then
-        local damage = player:getBodyDamage()
-        if damage then
-            damage:RestoreToFullHealth()
-            damage:setOverallBodyHealth(100.0)
-            if damage.setInfected then damage:setInfected(false) end
-            if damage.setInfectionLevel then damage:setInfectionLevel(0.0) end
+        -- Exact server-calculated after-values prevent additive effects from
+        -- being applied twice when multiplayer state synchronization catches up.
+        if args.treatment == "KnoxCure" then
+            local damage, parts = bodyParts(player)
+            if damage then
+                cureKnoxInfection(player)
+                local scope = tonumber(args.scope) or 1
+                if scope >= 2 then clearBites(parts) end
+                if scope >= 3 then
+                    clearWoundInfections(parts)
+                    restoreBodyParts(parts)
+                end
+                if scope >= 4 then damage:RestoreToFullHealth() end
+                if tonumber(args.healthAfter) then
+                    damage:setOverallBodyHealth(tonumber(args.healthAfter))
+                end
+            end
+        elseif args.treatment == "AdrenalineStimulant" then
+            local stats = player:getStats()
+            if stats then
+                if tonumber(args.enduranceAfter) then stats:setEndurance(tonumber(args.enduranceAfter)) end
+                if tonumber(args.fatigueAfter) then stats:setFatigue(tonumber(args.fatigueAfter)) end
+                if tonumber(args.panicAfter) then stats:setPanic(tonumber(args.panicAfter)) end
+                if tonumber(args.stressAfter) then stats:setStress(tonumber(args.stressAfter)) end
+                if tonumber(args.thirstAfter) then stats:setThirst(tonumber(args.thirstAfter)) end
+                stats:setEnduranceRecharging(false)
+            end
+            if args.overdose == true and tonumber(args.healthAfter) then
+                local damage = player:getBodyDamage()
+                if damage then damage:setOverallBodyHealth(math.max(1, tonumber(args.healthAfter))) end
+            end
         end
-    elseif args.treatment == "AdrenalineStimulant" then
-        local stats = player:getStats()
-        if stats then
-            local restore = math.max(1, math.min(100,
-                tonumber(setting("AdrenalineRestorePercent", 100.0)) or 100.0)) / 100
-            stats:setEndurance(math.min(1.0, stats:getEndurance() + restore))
-            if setting("ClearFatigue", true) then stats:setFatigue(0) end
-            stats:setEnduranceRecharging(false)
-            stats:setPanic(math.min(100, stats:getPanic()
-                + (tonumber(setting("AdrenalinePanic", 0)) or 0)))
-            stats:setStress(math.min(1.0, stats:getStress()
-                + (tonumber(setting("AdrenalineStress", 0.0)) or 0.0)))
-            stats:setThirst(math.min(1.0, stats:getThirst()
-                + (tonumber(setting("AdrenalineThirst", 0.0)) or 0.0)))
-        end
-        if args.overdose == true and tonumber(args.healthAfter) then
-            local damage = player:getBodyDamage()
-            if damage then damage:setOverallBodyHealth(tonumber(args.healthAfter)) end
-        end
-    end
 
         notify(player, getText(args.treatment == "KnoxCure"
             and "IGUI_ElixirCraft_KnoxCureUsed"
             or "IGUI_ElixirCraft_AdrenalineUsed"))
+        if args.overdose == true and tonumber(args.overdoseHealthLoss)
+            and tonumber(args.overdoseHealthLoss) > 0 then
+            local text = getText("IGUI_ElixirCraft_Overdose",
+                string.format("%.1f", tonumber(args.overdoseHealthLoss)))
+            if HaloTextHelper and HaloTextHelper.addBadText then
+                HaloTextHelper.addBadText(player, text)
+            else
+                notify(player, text)
+            end
+        end
+    elseif command == "VersionAccepted" then
+        if ElixirConsumption.SetProtocolState then
+            ElixirConsumption.SetProtocolState(true, false, tonumber(args.protocol))
+        end
+    elseif command == "VersionMismatch" then
+        if ElixirConsumption.SetProtocolState then
+            ElixirConsumption.SetProtocolState(false, true, tonumber(args.protocol))
+        end
+        notify(player, getText("IGUI_ElixirCraft_VersionMismatch"))
+    elseif command == "UsageAnnouncement" then
+        local treatmentName = args.treatment == "KnoxCure"
+            and getText("IGUI_ElixirCraft_TreatmentKnoxCure")
+            or getText("IGUI_ElixirCraft_TreatmentAdrenaline")
+        notify(player, getText("IGUI_ElixirCraft_GlobalUse",
+            tostring(args.username or "unknown"), treatmentName))
     elseif command == "StimulantCrash" then
         local stats = player:getStats()
         if stats then
@@ -290,11 +421,15 @@ local function onServerCommand(module, command, args)
             stats:setFatigue(math.max(stats:getFatigue(), fatigue))
         end
         if HaloTextHelper and HaloTextHelper.addBadText then
-            HaloTextHelper.addBadText(player, "Stimulant crash")
+            HaloTextHelper.addBadText(player, getText("IGUI_ElixirCraft_AdrenalineCrash"))
         end
     elseif command == "TreatmentRejected" then
         if args.reason == "cooldown" then
             notify(player, getText("IGUI_ElixirCraft_Cooldown", args.remaining or 1))
+        elseif args.reason == "cure-limit" then
+            notify(player, getText("IGUI_ElixirCraft_CureLimit"))
+        elseif args.reason == "effectiveness-failed" then
+            notify(player, getText("IGUI_ElixirCraft_CureFailed"))
         else
             notify(player, getText("IGUI_ElixirCraft_TreatmentRejected"))
         end

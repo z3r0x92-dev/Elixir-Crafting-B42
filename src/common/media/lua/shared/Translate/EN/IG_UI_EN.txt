@@ -5,5 +5,11 @@ IG_UI_EN = {
     IGUI_ElixirCraft_TreatmentRejected = "The treatment failed. Check the server log for details.",
     IGUI_ElixirCraft_TreatmentRejectedKept = "The treatment was rejected. The item remains in your inventory.",
     IGUI_ElixirCraft_AdrenalineCrash = "The stimulant wears off, leaving you exhausted.",
+    IGUI_ElixirCraft_CureLimit = "This character has already survived one successful cure.",
+    IGUI_ElixirCraft_CureFailed = "The experimental cure was ineffective.",
+    IGUI_ElixirCraft_Overdose = "Repeated stimulant use caused an overdose. Health lost: %1.",
     IGUI_ElixirCraft_GlobalUse = "%1 used %2.",
+    IGUI_ElixirCraft_TreatmentKnoxCure = "an Experimental Knox Cure",
+    IGUI_ElixirCraft_TreatmentAdrenaline = "an Adrenaline Stimulant",
+    IGUI_ElixirCraft_VersionMismatch = "Elixir Crafting client/server versions do not match. Treatment commands are blocked.",
 }

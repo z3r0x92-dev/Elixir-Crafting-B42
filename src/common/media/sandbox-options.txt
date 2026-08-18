@@ -312,6 +312,16 @@ option ElixirCraftB42.UsageAnnouncement
     translation = UsageAnnouncement,
 }
 
+option ElixirCraftB42.UsageAnnouncementCooldownSeconds
+{
+    type = double,
+    min = 0.0,
+    max = 300.0,
+    default = 5.0,
+    page = ElixirCraftB42,
+    translation = UsageAnnouncementCooldownSeconds,
+}
+
 option ElixirCraftB42.EnableUsageLogging
 {
     type = boolean,

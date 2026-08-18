@@ -1,7 +1,10 @@
 require "ElixirConsumption"
 
 local MODULE = "ElixirCraftB42"
+local PROTOCOL_VERSION = 3
 local recentRequests = {}
+local compatibleClients = {}
+local lastAnnouncements = {}
 local REQUEST_WINDOW_MS = 750
 local REQUEST_RETENTION_MS = 60000
 
@@ -19,6 +22,15 @@ end
 
 local function playerKey(player)
     return tostring(player:getOnlineID()) .. ":" .. tostring(player:getUsername() or "unknown")
+end
+
+local function handleHello(player, args)
+    local key = playerKey(player)
+    local compatible = tonumber(args and args.protocol) == PROTOCOL_VERSION
+    compatibleClients[key] = compatible
+    sendServerCommand(player, MODULE,
+        compatible and "VersionAccepted" or "VersionMismatch",
+        { protocol = PROTOCOL_VERSION })
 end
 
 local function pruneRecentRequests(now)
@@ -68,13 +80,29 @@ end
 
 local function restoreItem(container, item)
     if not container or not item then return false end
-    local restored = pcall(function() container:AddItem(item) end)
-    return restored
+    local added = pcall(function() container:AddItem(item) end)
+    if not added then return false end
+    local _, restored = findItem(container, tostring(item:getID()), item:getFullType())
+    return restored ~= nil
+        and (not item.getContainer or item:getContainer() == container)
 end
 
 local function onClientCommand(module, command, player, args)
-    if module ~= MODULE or command ~= "UseTreatment" or not player then return end
+    if module ~= MODULE or not player then return end
     args = args or {}
+    if command == "Hello" then
+        handleHello(player, args)
+        return
+    end
+    if command ~= "UseTreatment" then return end
+
+    if compatibleClients[playerKey(player)] ~= true
+        or tonumber(args.protocol) ~= PROTOCOL_VERSION then
+        args.itemKept = true
+        reject(player, args, "protocol-mismatch")
+        sendServerCommand(player, MODULE, "VersionMismatch", { protocol = PROTOCOL_VERSION })
+        return
+    end
     local treatment = tostring(args.treatment or "")
     local expectedType = treatment == "KnoxCure" and "ElixirCraft.KnoxCure"
         or treatment == "AdrenalineStimulant" and "ElixirCraft.StaminaElixir"
@@ -127,6 +155,11 @@ local function onClientCommand(module, command, player, args)
     end
     if not ok then
         local returned = shouldReturnRejected(treatment) and restoreItem(container, item)
+        if shouldReturnRejected(treatment) and not returned then
+            print(string.format(
+                "[ElixirCraftB42] ERROR failed to restore rejected item id=%s type=%s player=%s",
+                itemId, expectedType, playerKey(player)))
+        end
         args.itemKept = returned
         reject(player, args, reason, detail)
         return
@@ -138,19 +171,33 @@ local function onClientCommand(module, command, player, args)
         overdose = type(detail) == "table" and detail.overdose == true,
         overdoseHealthLoss = type(detail) == "table" and detail.overdoseHealthLoss or 0,
         healthAfter = type(detail) == "table" and detail.healthAfter or nil,
+        scope = type(detail) == "table" and detail.scope or nil,
+        enduranceAfter = type(detail) == "table" and detail.enduranceAfter or nil,
+        fatigueAfter = type(detail) == "table" and detail.fatigueAfter or nil,
+        panicAfter = type(detail) == "table" and detail.panicAfter or nil,
+        stressAfter = type(detail) == "table" and detail.stressAfter or nil,
+        thirstAfter = type(detail) == "table" and detail.thirstAfter or nil,
     })
 
     local announcement = tonumber(setting("UsageAnnouncement", 2)) or 2
-    if announcement == 4 then
+    local announcementNow = getTimestampMs and getTimestampMs() or 0
+    local announcementCooldown = math.max(0,
+        tonumber(setting("UsageAnnouncementCooldownSeconds", 5.0)) or 5.0) * 1000
+    local announcementKey = playerKey(player)
+    local canAnnounce = announcementNow <= 0 or not lastAnnouncements[announcementKey]
+        or announcementNow - lastAnnouncements[announcementKey] >= announcementCooldown
+    if canAnnounce and announcement == 4 then
         sendServerCommand(MODULE, "UsageAnnouncement", {
             username = player:getUsername() or "unknown",
             treatment = treatment,
         })
-    elseif announcement == 3 then
+        lastAnnouncements[announcementKey] = announcementNow
+    elseif canAnnounce and announcement == 3 then
         sendServerCommand(player, MODULE, "UsageAnnouncement", {
             username = player:getUsername() or "unknown",
             treatment = treatment,
         })
+        lastAnnouncements[announcementKey] = announcementNow
     end
 end
 

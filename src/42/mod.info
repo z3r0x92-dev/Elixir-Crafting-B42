@@ -1,5 +1,5 @@
-name=Elixir Crafting (B42 Knox Cure & Stamina)
+name=Elixir Crafting
 id=ElixirCraftB42
-description=Adds an Experimental Knox Cure and Adrenaline Stimulant with Antibodies compatibility for Build 42 multiplayer servers.
+description=Adds rare craftable medical elixirs, including a health treatment and stamina stimulant. Crafting requirements and effects are configurable to keep them useful without removing survival difficulty.
 poster=poster.png
-modversion=1.4.2
+modversion=1.5.0

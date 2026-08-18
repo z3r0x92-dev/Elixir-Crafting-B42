@@ -7,6 +7,56 @@ All notable changes to this project will be documented here.
 - In-game Build 42.20 multiplayer validation.
 - Balance review for cure ingredients and cooldowns.
 
+## [1.5.0] - 2026-08-18
+
+### Added
+
+- Protocol-v3 client/server handshake with retries and server-side blocking of incompatible treatment commands.
+- Localized private and global treatment-use announcements with a configurable per-player cooldown.
+- Detailed treatment-scope and administrator-only crafting tooltips.
+
+### Fixed
+
+- Enforced administrator-only crafting in both recipe eligibility callbacks using the player's server access level.
+- Made rare-loot registration explicitly server-only and idempotent.
+- Strengthened rejected-item restoration by confirming its ID, full type, and original container, with an error log if rollback fails.
+
+### Security
+
+- Treatment commands now require both a completed compatibility handshake and the current protocol value.
+- The animated vanilla consumption route remains runtime-gated by exact server inventory ID/type validation; no unverified custom timed-action API was introduced.
+
+## [1.4.4] - 2026-08-18
+
+### Fixed
+
+- Unified consumption around the vanilla food action so bottle-drinking animation and server validation use one pathway.
+- Added the exact inventory item ID to multiplayer `OnEat` requests and removed the competing instant-use context action.
+- Corrected cure scopes: Knox-only preserves wound infections; the second scope additionally clears bites; the third clears wound infections and restores body parts; the fourth restores full health.
+- Confirmed rejected-item restoration by locating the same ID and full type after reinsertion.
+
+### Preserved
+
+- Server-authoritative exact stat synchronization and non-lethal overdose handling.
+- Antibodies integration, cooldowns, per-character cure limits, and configurable rejected-item behavior.
+
+## [1.4.3] - 2026-08-18
+
+### Fixed
+
+- Enforced the Adrenaline crafting toggle.
+- Activated all four cure treatment scopes and the cure-effectiveness roll.
+- Enforced the optional one-successful-cure-per-character limit using persistent character mod data.
+- Restored the missing shared validation and settings functions used by client and server code.
+- Prevented multiplayer stimulant bonuses from being added twice by applying exact server-authoritative results on clients.
+- Clamped overdose damage so it cannot reduce a living character below one health.
+- Localized stimulant crash, ineffective-cure, and cure-limit feedback.
+
+### Preserved
+
+- Antibodies medical-file integration and native fallback behavior.
+- Configurable return/consumption behavior when a treatment is rejected or ineffective.
+
 ## [1.2.0] - 2026-08-17
 
 ### Added
@@ -31,4 +81,3 @@ All notable changes to this project will be documented here.
 ## [1.1.0] - 2026-08-17
 
 - Initial configurable health and stamina prototype.
-

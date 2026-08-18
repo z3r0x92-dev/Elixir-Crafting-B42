@@ -16,6 +16,7 @@ module ElixirCraft
         DaysFresh = 1000000,
         DaysTotallyRotten = 1000000,
         IsCookable = FALSE,
+        EatType = 2handbottle,
         CustomEatSound = DrinkingFromBottle,
         OnEat = ElixirConsumption.OnEatKnoxCure,
     }
@@ -36,6 +37,7 @@ module ElixirCraft
         DaysFresh = 1000000,
         DaysTotallyRotten = 1000000,
         IsCookable = FALSE,
+        EatType = 2handbottle,
         CustomEatSound = DrinkingFromBottle,
         OnEat = ElixirConsumption.OnEatAdrenalineStimulant,
     }

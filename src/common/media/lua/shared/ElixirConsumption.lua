@@ -124,6 +124,16 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
         if not setting("EnableAdrenalineStimulant", true) then return false, "disabled" end
         local stats = player:getStats()
         if not stats then return false, "no-stats" end
+
+        local state = stateFor(player)
+        local now = worldHours()
+        local previousUse = tonumber(state.lastAdrenalineUse)
+        local overdoseWindow = math.max(0,
+            tonumber(setting("StimulantOverdoseWindowHours", 12.0)) or 12.0)
+        local elapsed = previousUse and (now - previousUse) or nil
+        local overdose = overdoseWindow > 0 and elapsed ~= nil
+            and elapsed >= 0 and elapsed <= overdoseWindow
+
         local restore = math.max(1, math.min(100,
             tonumber(setting("AdrenalineRestorePercent", 100.0)) or 100.0)) / 100
         stats:setEndurance(math.min(1.0, stats:getEndurance() + restore))
@@ -135,12 +145,63 @@ function ElixirConsumption.ApplyTreatment(player, treatment)
             + (tonumber(setting("AdrenalineStress", 0.0)) or 0.0)))
         stats:setThirst(math.min(1.0, stats:getThirst()
             + (tonumber(setting("AdrenalineThirst", 0.0)) or 0.0)))
-        stateFor(player).lastAdrenalineUse = worldHours()
-        logUse(player, treatment, "native")
-        return true, "native"
+
+        local healthAfter = nil
+        local overdoseHealthLoss = math.max(0, math.min(100,
+            tonumber(setting("StimulantOverdoseHealthLoss", 10.0)) or 10.0))
+        if overdose and overdoseHealthLoss > 0 then
+            local damage = player:getBodyDamage()
+            if damage and damage.getOverallBodyHealth then
+                healthAfter = math.max(0, damage:getOverallBodyHealth() - overdoseHealthLoss)
+                damage:setOverallBodyHealth(healthAfter)
+            end
+        end
+
+        state.lastAdrenalineUse = now
+        if setting("EnableStimulantPostCrash", true) then
+            local duration = math.max(0,
+                tonumber(setting("StimulantEffectDurationHours", 1.0)) or 1.0)
+            state.stimulantCrashAt = now + duration
+            state.stimulantCrashPending = true
+        else
+            state.stimulantCrashAt = nil
+            state.stimulantCrashPending = nil
+        end
+
+        logUse(player, treatment, overdose and "native-overdose" or "native")
+        return true, "native", {
+            overdose = overdose,
+            overdoseHealthLoss = overdose and overdoseHealthLoss or 0,
+            healthAfter = healthAfter,
+        }
     end
 
     return false, "unknown-treatment"
+end
+
+function ElixirConsumption.ProcessPostCrash(player)
+    if not validPlayer(player) then return false end
+    local state = stateFor(player)
+    if state.stimulantCrashPending ~= true then return false end
+
+    if not setting("EnableStimulantPostCrash", true) then
+        state.stimulantCrashAt = nil
+        state.stimulantCrashPending = nil
+        return false
+    end
+
+    local crashAt = tonumber(state.stimulantCrashAt)
+    if not crashAt or worldHours() < crashAt then return false end
+
+    local stats = player:getStats()
+    if not stats then return false end
+    local fatigue = math.max(0, math.min(1,
+        tonumber(setting("StimulantCrashFatigue", 0.35)) or 0.35))
+
+    state.stimulantCrashAt = nil
+    state.stimulantCrashPending = nil
+    stats:setFatigue(math.max(stats:getFatigue(), fatigue))
+    return true, fatigue
 end
 
 local function countAfterUse(player, fullType)
@@ -212,11 +273,25 @@ local function onServerCommand(module, command, args)
             stats:setThirst(math.min(1.0, stats:getThirst()
                 + (tonumber(setting("AdrenalineThirst", 0.0)) or 0.0)))
         end
+        if args.overdose == true and tonumber(args.healthAfter) then
+            local damage = player:getBodyDamage()
+            if damage then damage:setOverallBodyHealth(tonumber(args.healthAfter)) end
+        end
     end
 
         notify(player, getText(args.treatment == "KnoxCure"
             and "IGUI_ElixirCraft_KnoxCureUsed"
             or "IGUI_ElixirCraft_AdrenalineUsed"))
+    elseif command == "StimulantCrash" then
+        local stats = player:getStats()
+        if stats then
+            local fatigue = math.max(0, math.min(1,
+                tonumber(args.fatigue) or tonumber(setting("StimulantCrashFatigue", 0.35)) or 0.35))
+            stats:setFatigue(math.max(stats:getFatigue(), fatigue))
+        end
+        if HaloTextHelper and HaloTextHelper.addBadText then
+            HaloTextHelper.addBadText(player, "Stimulant crash")
+        end
     elseif command == "TreatmentRejected" then
         if args.reason == "cooldown" then
             notify(player, getText("IGUI_ElixirCraft_Cooldown", args.remaining or 1))

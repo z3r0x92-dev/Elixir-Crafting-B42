@@ -1,0 +1,4 @@
+ContextMenu_EN = {
+    ContextMenu_ElixirCraft_UseKnoxCure = "Use Experimental Knox Cure",
+    ContextMenu_ElixirCraft_UseAdrenaline = "Use Adrenaline Stimulant",
+}

@@ -2,4 +2,8 @@ IG_UI_EN = {
     IGUI_ElixirCraft_KnoxCureUsed = "The cure floods your system. The infection is gone.",
     IGUI_ElixirCraft_AdrenalineUsed = "Adrenaline surges through your body.",
     IGUI_ElixirCraft_Cooldown = "Your body needs %1 more in-game hour(s) before another elixir.",
+    IGUI_ElixirCraft_TreatmentRejected = "The treatment failed. Check the server log for details.",
+    IGUI_ElixirCraft_TreatmentRejectedKept = "The treatment was rejected. The item remains in your inventory.",
+    IGUI_ElixirCraft_AdrenalineCrash = "The stimulant wears off, leaving you exhausted.",
+    IGUI_ElixirCraft_GlobalUse = "%1 used %2.",
 }

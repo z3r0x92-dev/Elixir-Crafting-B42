@@ -1,6 +1,7 @@
-name=Elixir Crafting
+name=Knox Virus Elixirs
 id=ElixirCraftB42
 description=Adds rare craftable medical elixirs, including a health treatment and stamina stimulant. Crafting requirements and effects are configurable to keep them useful without removing survival difficulty.
 poster=poster.png
-modversion=1.5.0
+version=1.5.1
+modversion=1.5.1
 versionMin=42.0

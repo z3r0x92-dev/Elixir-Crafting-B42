@@ -1,4 +1,4 @@
-ELIXIR CRAFTING B42 v1.5.0
+KNOX VIRUS ELIXIRS B42 v1.5.1
 ========================================
 
 MOD ID

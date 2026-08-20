@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1] - 2026-08-20
+
+- renames the displayed package to Knox Virus Elixirs without changing the canonical `ElixirCraftB42` mod ID;
+- aligns `version`, `modversion`, release tooling, documentation, translations, and Workshop metadata on 1.5.1;
+- preserves the namespaced sandbox translation keys required by the existing English translation table.
+
 All notable changes to this project will be documented here.
 
 ## [Unreleased]
